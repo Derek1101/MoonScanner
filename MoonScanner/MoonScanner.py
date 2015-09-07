@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/env python
 
+import time
 import checkRule
 import StatusCode
 import siteReader
@@ -17,13 +18,7 @@ class checker(object):
         self.goodSet = set()
         # url that has been proved bad :(
         self.badSet = set()
-        # Parent URL count
-        self.count = 0
     def check(self, url):
-        # all the urls in one url's content
-        siteDict = {}
-        # check result
-        passCheck = True
         # good/bad result
         goodResult = ''
         badResult = ''
@@ -48,14 +43,6 @@ class checker(object):
                 else:
                     badResult = badResult + result[1]
 
-            # extract all the link into our innerList
-            #with open('OK.txt','w') as good:
-            #    good.write(goodResult)
-            
-            #with open('BAD.txt', 'w') as bad:
-            #    bad.write(badResult)
-
-            # Final message
         return badResult, goodResult
 
 
@@ -70,7 +57,6 @@ class checker(object):
         soup = BeautifulSoup(content, "html.parser")
         for link in soup.find_all("a"):
             href = link.get("href")
-
             if href != None:
                 # relative link
                 if href.strip().startswith('/'):
@@ -81,53 +67,51 @@ class checker(object):
 
     def getCheckResult(self, url, name):
         # CheckResult flag
-        checkFlag = True
+        flag = True
         # Check result string
-        result = '\n'+ name + '\t' + url + '\t'
+        result = '\n %s : %s ' %(name, url)
         # Check if the url is already in our goodSites or badSites
         if url in self.goodSet:
-            result = result + 'OK\n'
+            pass
+            # result = result + 'OK\n'
             # return checkFlag, result
-        if url in self.badSet:
-            checkFlag = False
-            result = result + 'BAD\n'
-            
-        # New url
-        myCheckRule = checkRule.checkRule(url)
-        status = myCheckRule.startCheck()
-        # if status good, add to goodSet
-        if status == StatusCode.StatusCode.OK:
-            self.goodSet.add(url)
-            result = result + '  ' + str(StatusCode.StatusCode.OK) +'\n'
+        elif url in self.badSet:
+            flag = False
         else:
-            checkFlag = False
-            self.badSet.add(url)
-            result = result + '  ' + str(status) +'\n'
+            # New url
+            rule = checkRule.checkRule(url)
+            status = rule.startCheck()
+            # if status good, add to goodSet
+            if status == StatusCode.StatusCode.OK:
+                self.goodSet.add(url)
+            else:
+                flag = False
+                self.badSet.add(url)
 
-        return checkFlag, result
+            result += str(status)
 
-
-
+        return flag, result
 
 if __name__ == '__main__':
+    start = time.clock()
     myReader = siteReader.siteReader('site.txt')
     siteList = myReader.getSiteList()
     count = 0
+    goodUrl = badUrl = ''
+
+    myChecker = checker()
     for url in siteList:
         count += 1
-        myChecker = checker()
         result = myChecker.check(url)
+        badUrl += '\n------------------------- Parent Link %d -------------------------\n' %(count)
+        goodUrl += '\n------------------------- Parent Link %d -------------------------\n' %(count)
+        badUrl += result[0]
+        goodUrl += result[1]
 
-        # print "------------------------------BAD LINK-----------------------------------"
-        # print result[0]
-        # print "------------------------------GOOD LINK----------------------------------"
-        # print result[1]
-        with open('bad.txt','a') as bad:
-            bad.write('------------------------Parent Link - ' + str(count) + '----------------------------')
-            bad.write(result[0].encode('utf-8'))
-        with open('good.txt','a') as good:
-            good.write('------------------------Parent Link - ' + str(count) + '----------------------------')
-            good.write(result[1].encode('utf-8'))
-
+    with open('bad.txt','w') as bad:
+        bad.write(badUrl.encode('utf-8'))
+    with open('good.txt','w') as good:
+        good.write(goodUrl.encode('utf-8'))
 
     print ('All url has been checked, please check out "bad.txt" and "good.txt" for detailed information')
+    print (time.clock() - start)
