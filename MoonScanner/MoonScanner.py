@@ -37,6 +37,9 @@ class checker(object):
 
             # Now we got site dictionary in ('url','text'), let's check
             for k, v in siteDict.iteritems():
+                # Inner page link
+                if k.startswith('#'):
+                    k = url + k
                 result = self.getCheckResult(k,v)
                 if result[0]:
                     goodResult = goodResult + result[1]

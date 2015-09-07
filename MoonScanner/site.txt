@@ -1,2 +1,1 @@
-http://wacn-ppe.chinacloudsites.cn/zh-cn/documentation/articles/sql-database-index-advisor
-http://wacn-ppe.chinacloudsites.cn/zh-cn/documentation/articles/sql-database-index-advisor-bad-link
+http://wacn-ppe.chinacloudsites.cn/documentation/articles/sql-database-manage-azure-ssms
