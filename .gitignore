@@ -1,2 +1,3 @@
-MoonScanner/bad.txt
-MoonScanner/good.txt
+MoonScanner/BAD.txt
+MoonScanner/OK.txt
+.idea/*
