@@ -1,4 +1,4 @@
-﻿## MoonScanner
+## MoonScanner
 **MoonScanner** is a scan tool which could scann all the links (site, image, inner link) and generate broken link and good link report.
 
 ## Support for
