@@ -1,8 +1,7 @@
 
-                      // MoonScanner //
-
-          Simple tool to scann broken links (site, image).
-
+                    // MoonScanner //
+                      
+        Simple tool to scann broken links (site, image).
 
 
 1. Support
@@ -10,18 +9,18 @@
   - generate both good link and bad link report
 
 2. How to
-  - Install **beautifulsoup4** first:
+  - Install packages:
         
   ```python
-    pip install beautifulsoup4
+    pip install -r requirements.txt
   ```
         
   - Add urls to sites.txt
-        
+    
   - Run command
         
   ```python
-    python MoonScanner.py
+    python app.py
   ```
       
   - Two reports: good.txt and bad.txt, including detailed info.
