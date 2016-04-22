@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿# encoding: utf-8
 
 import time
 import checkRule
@@ -7,10 +7,11 @@ import siteReader
 import urllib2
 from bs4 import BeautifulSoup
 
+
 class checker(object):
     def __init__(self):
         # self.urlList = urlList
-        self.startStr = '<section class="wa-section">'
+        self.startStr = '<section class="wa-section left-nav-technical-section">'
         self.endStr = '</section>'
         # wacn host
         self.host = 'http://wacn-ppe.chinacloudsites.cn'
@@ -18,6 +19,7 @@ class checker(object):
         self.goodSet = set()
         # url that has been proved bad :(
         self.badSet = set()
+
     def check(self, url):
         # good/bad result
         goodResult = ''
@@ -40,7 +42,7 @@ class checker(object):
                 # Inner page link
                 if k.startswith('#'):
                     k = url + k
-                result = self.getCheckResult(k,v)
+                result = self.getCheckResult(k, v)
                 if result[0]:
                     goodResult = goodResult + result[1]
                 else:
@@ -48,8 +50,7 @@ class checker(object):
 
         return badResult, goodResult
 
-
-    def parser(self,html):
+    def parser(self, html):
         # define temp dict to hold site dictionary
         tempDict = {}
         # extract our content between '<section class="wa-section">...</section>'
@@ -60,7 +61,7 @@ class checker(object):
         soup = BeautifulSoup(content, "html.parser")
         for link in soup.find_all("a"):
             href = link.get("href")
-            if href != None:
+            if href is not None:
                 # relative link
                 if href.strip().startswith('/'):
                     href = self.host + href
@@ -111,9 +112,9 @@ if __name__ == '__main__':
         badUrl += result[0]
         goodUrl += result[1]
 
-    with open('bad.txt','w') as bad:
+    with open('bad.txt', 'w') as bad:
         bad.write(badUrl.encode('utf-8'))
-    with open('good.txt','w') as good:
+    with open('good.txt', 'w') as good:
         good.write(goodUrl.encode('utf-8'))
 
     print ('All url has been checked, please check out "bad.txt" and "good.txt" for detailed information')

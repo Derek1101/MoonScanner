@@ -1,5 +1,8 @@
-﻿import urllib
+﻿# encoding: utf-8
+
+import urllib
 import StatusCode
+
 
 class checkRule(object):
     """description of class"""
@@ -8,7 +11,7 @@ class checkRule(object):
 
     def startCheck(self):
         response = urllib.urlopen(self.url)
-        
+
         # 1. check for real 404,500 etc
         if response.getcode() == StatusCode.StatusCode.OK:
             # 2. check for mooncake 404 or 500 by check redirected url
@@ -20,7 +23,7 @@ class checkRule(object):
                 return StatusCode.StatusCode.OK
         else:
             return response.getcode()
-            
+
 
 if __name__ == '__main__':
     testUrl = 'http://wacn-ppe.chinacloudsites.cn/zh-cn/documentation/articles/virtual-machines-linux-coreos-how-to'

@@ -1,4 +1,6 @@
-﻿class siteReader(object):
+﻿# encoding: utf-8
+
+class siteReader(object):
     """description of class"""
     def __init__(self, filePath):
         self.filePath = filePath
