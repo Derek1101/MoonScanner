@@ -15,7 +15,7 @@
     pip install -r requirements.txt
   ```
         
-  - Add urls to sites.txt
+  - Add urls to site.txt
     
   - Run command
         
