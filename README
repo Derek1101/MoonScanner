@@ -11,7 +11,7 @@
 	~ How to use?
  	  1. Install required packages:
 
-	  	python pip install -r requirements.txt
+	  	pip install -r requirements.txt
         
  	  2. Add urls to site.txt
     
