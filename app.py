@@ -36,6 +36,7 @@ class checker(object):
         # parent url error
         if not firstResult[0]:
             badResult = badResult + firstResult[1]
+            error_flag = True
             goodResult = ''
         else:
             # open parent url to get page content
