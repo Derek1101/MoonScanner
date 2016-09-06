@@ -1,6 +1,7 @@
 ﻿# encoding: utf-8
 
 import time
+import multiprocessing as mp
 import checkRule
 import StatusCode
 import siteReader
@@ -8,7 +9,7 @@ import urllib2
 from bs4 import BeautifulSoup
 
 
-class checker(object):
+class Checker(object):
     def __init__(self):
         # self.urlList = urlList
         self.startStr = '<div class="single-page">'
@@ -103,25 +104,60 @@ class checker(object):
 
         return flag, result.format(name.encode('utf-8'), url.encode('utf-8'), status)
 
+
+def worker(arg, q):
+    ''' worker '''
+    checker = Checker()
+    result = checker.check(arg)
+    print('finished')
+    return result
+
+
+def listener(q):
+    ''' listen for messages on the q, writes to file. '''
+    bad_file = open('bad.md', 'wb')
+    good_file = open('good.md', 'wb')
+
+    while True:
+        m = q.get()
+        if m == 'kill':
+            break
+        good_result = m[0]
+        bad_result = m[1]
+
+        good_file.write(good_result)
+        bad_file.write(bad_result)
+
+    bad_file.close()
+    good_file.close()
+
+
 if __name__ == '__main__':
     start = time.clock()
+    # Use manager queue
+    manager = mp.Manager()
+    q = manager.Queue()
+    pool = mp.Pool(mp.cpu_count() + 2)
+
+    # put listener to work first
+    watcher = pool.apply_async(listener, (q,))
+
     myReader = siteReader.siteReader('site.txt')
     siteList = myReader.getSiteList()
-    count = 0
-    goodUrl = badUrl = ''
 
-    myChecker = checker()
+    # fire up workers
+    jobs = []
     for url in siteList:
-        result = myChecker.check(url)
-        badUrl += result[0]
-        goodUrl += result[1]
-        count += 1
-        print(count)
+        job = pool.apply_async(worker, (url, q))
+        jobs.append(job)
 
-        with open('bad.md', 'w') as bad:
-            bad.write(badUrl)
-        with open('good.md', 'w') as good:
-            good.write(goodUrl)
+    # collect results from the workers throught the pool result queue
+    for job in jobs:
+        q.put(job.get())
+
+    # now we are done, kill the listener
+    q.put('kill')
+    pool.close()
 
     print ('All url has been checked, please check out "bad.md" and "good.md" for detailed info.')
     print ('Total time : {0}'.format(time.clock() - start))
