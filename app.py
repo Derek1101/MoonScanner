@@ -109,12 +109,12 @@ def worker(arg, q):
     ''' worker '''
     checker = Checker()
     result = checker.check(arg)
-    print('finished')
     return result
 
 
 def listener(q):
     ''' listen for messages on the q, writes to file. '''
+    count = 0
     bad_file = open('bad.md', 'wb')
     good_file = open('good.md', 'wb')
 
@@ -122,11 +122,12 @@ def listener(q):
         m = q.get()
         if m == 'kill':
             break
-        good_result = m[0]
-        bad_result = m[1]
-
-        good_file.write(good_result)
+        bad_result = m[0]
+        good_result = m[1]
         bad_file.write(bad_result)
+        good_file.write(good_result)
+        count += 1
+        print('Finish scan {0}'.format(count))
 
     bad_file.close()
     good_file.close()
