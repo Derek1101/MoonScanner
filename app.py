@@ -28,6 +28,9 @@ class checker(object):
         badResult = '#### {0}\n'.format(url)
         badResult += '| Name | Link | State |\n'
         badResult += '| ---- | ---- | ----- |\n'
+
+        # flag to indicate if error found
+        error_flag = False
         # check for the url given
         firstResult = self.getCheckResult(url, 'Parent Link Error')
         # parent url error
@@ -48,8 +51,11 @@ class checker(object):
                 if result[0]:
                     goodResult = goodResult + result[1]
                 else:
+                    error_flag = True
                     badResult = badResult + result[1]
 
+        if not error_flag:
+            badResult = ''
         return badResult, goodResult
 
     def parser(self, html):
