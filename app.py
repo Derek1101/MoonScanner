@@ -11,10 +11,10 @@ from bs4 import BeautifulSoup
 class checker(object):
     def __init__(self):
         # self.urlList = urlList
-        self.startStr = '<section class="wa-section left-nav-technical-section">'
-        self.endStr = '</section>'
+        self.startStr = '<div class="single-page">'
+        self.endStr = '<footer class="footer">'
         # wacn host
-        self.host = 'http://wacn-ppe.chinacloudsites.cn'
+        self.host = 'https://www.azure.cn'
         # url that has been proved good :)
         self.goodSet = set()
         # url that has been proved bad :(
@@ -22,14 +22,18 @@ class checker(object):
 
     def check(self, url):
         # good/bad result
-        goodResult = ''
-        badResult = ''
-
+        goodResult = '#### {0}\n'.format(url)
+        goodResult += '| Name | Link | State |\n'
+        goodResult += '| ---- | ---- | ----- |\n'
+        badResult = '#### {0}\n'.format(url)
+        badResult += '| Name | Link | State |\n'
+        badResult += '| ---- | ---- | ----- |\n'
         # check for the url given
         firstResult = self.getCheckResult(url, 'Parent Link Error')
         # parent url error
         if not firstResult[0]:
             badResult = badResult + firstResult[1]
+            goodResult = ''
         else:
             # open parent url to get page content
             html = urllib2.urlopen(url).read()
@@ -40,8 +44,6 @@ class checker(object):
             # Now we got site dictionary in ('url','text'), let's check
             for k, v in siteDict.iteritems():
                 # Inner page link
-                if k.startswith('#'):
-                    k = url + k
                 result = self.getCheckResult(k, v)
                 if result[0]:
                     goodResult = goodResult + result[1]
@@ -62,6 +64,11 @@ class checker(object):
         for link in soup.find_all("a"):
             href = link.get("href")
             if href is not None:
+                # inner link and video link should be skipped
+                if href.strip().startswith('#') or \
+                        href.strip().startswith('//video') or \
+                        href.strip().startswith('mailto:'):
+                    continue
                 # relative link
                 if href.strip().startswith('/'):
                     href = self.host + href
@@ -72,16 +79,11 @@ class checker(object):
     def getCheckResult(self, url, name):
         # CheckResult flag
         flag = True
+        status = 200
         # Check result string
-        result = '\n %s : %s ' %(name, url)
+        result = '| {0} | {1} | {2} |\n'
         # Check if the url is already in our goodSites or badSites
-        if url in self.goodSet:
-            pass
-            # result = result + 'OK\n'
-            # return checkFlag, result
-        elif url in self.badSet:
-            flag = False
-        else:
+        if url not in self.goodSet:
             # New url
             rule = checkRule.checkRule(url)
             status = rule.startCheck()
@@ -92,9 +94,7 @@ class checker(object):
                 flag = False
                 self.badSet.add(url)
 
-            result += str(status)
-
-        return flag, result
+        return flag, result.format(name.encode('utf-8'), url.encode('utf-8'), status)
 
 if __name__ == '__main__':
     start = time.clock()
@@ -105,17 +105,16 @@ if __name__ == '__main__':
 
     myChecker = checker()
     for url in siteList:
-        count += 1
         result = myChecker.check(url)
-        badUrl += '\n------------------------- Parent Link %d -------------------------\n' %(count)
-        goodUrl += '\n------------------------- Parent Link %d -------------------------\n' %(count)
         badUrl += result[0]
         goodUrl += result[1]
+        count += 1
+        print(count)
 
-    with open('bad.txt', 'w') as bad:
-        bad.write(badUrl.encode('utf-8'))
-    with open('good.txt', 'w') as good:
-        good.write(goodUrl.encode('utf-8'))
+        with open('bad.md', 'w') as bad:
+            bad.write(badUrl)
+        with open('good.md', 'w') as good:
+            good.write(goodUrl)
 
-    print ('All url has been checked, please check out "bad.txt" and "good.txt" for detailed information')
-    print (time.clock() - start)
+    print ('All url has been checked, please check out "bad.md" and "good.md" for detailed info.')
+    print ('Total time : {0}'.format(time.clock() - start))

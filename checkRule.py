@@ -10,19 +10,22 @@ class checkRule(object):
         self.url = url
 
     def startCheck(self):
-        response = urllib.urlopen(self.url)
+        try:
+            response = urllib.urlopen(self.url)
 
-        # 1. check for real 404,500 etc
-        if response.getcode() == StatusCode.StatusCode.OK:
-            # 2. check for mooncake 404 or 500 by check redirected url
-            if response.geturl().find('errors/404') > 0:
-                return StatusCode.StatusCode.MoonCake_Not_Found
-            elif response.geturl().find('errors/500') > 0:
-                return StatusCode.StatusCode.MoonCake_Internal_Server_Error
+            # 1. check for real 404,500 etc
+            if response.getcode() == StatusCode.StatusCode.OK:
+                # 2. check for mooncake 404 or 500 by check redirected url
+                if response.geturl().find('errors/404') > 0:
+                    return StatusCode.StatusCode.MoonCake_Not_Found
+                elif response.geturl().find('errors/500') > 0:
+                    return StatusCode.StatusCode.MoonCake_Internal_Server_Error
+                else:
+                    return StatusCode.StatusCode.OK
             else:
-                return StatusCode.StatusCode.OK
-        else:
-            return response.getcode()
+                return response.getcode()
+        except Exception as e:
+            return StatusCode.StatusCode.MoonCake_Not_Found
 
 
 if __name__ == '__main__':
