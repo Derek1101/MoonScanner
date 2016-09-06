@@ -1,6 +1,6 @@
 ﻿# encoding: utf-8
 
-import urllib
+import requests
 import StatusCode
 
 
@@ -11,19 +11,19 @@ class checkRule(object):
 
     def startCheck(self):
         try:
-            response = urllib.urlopen(self.url)
+            response = requests.get(self.url)
 
             # 1. check for real 404,500 etc
-            if response.getcode() == StatusCode.StatusCode.OK:
+            if response.status_code == StatusCode.StatusCode.OK:
                 # 2. check for mooncake 404 or 500 by check redirected url
-                if response.geturl().find('errors/404') > 0:
+                if response.url.find('errors/404') > 0:
                     return StatusCode.StatusCode.MoonCake_Not_Found
-                elif response.geturl().find('errors/500') > 0:
+                elif response.url.find('errors/500') > 0:
                     return StatusCode.StatusCode.MoonCake_Internal_Server_Error
                 else:
                     return StatusCode.StatusCode.OK
             else:
-                return response.getcode()
+                return response.status_code
         except Exception as e:
             return StatusCode.StatusCode.MoonCake_Not_Found
 
