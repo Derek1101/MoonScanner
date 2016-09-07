@@ -91,6 +91,10 @@ class Checker(object):
         # Check result string
         result = '| {0} | {1} | {2} |\n'
         # Check if the url is already in our goodSites or badSites
+        if url in self.badSet:
+            flag = False
+            # proved to be bad url before
+            status = 600
         if url not in self.goodSet:
             # New url
             rule = checkRule.checkRule(url)
