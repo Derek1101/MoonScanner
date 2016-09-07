@@ -1,8 +1,10 @@
 ﻿# encoding: utf-8
 
 import time
+import json
 import multiprocessing as mp
 from urlparse import urlparse
+import requests
 import urllib2
 import checkRule
 import StatusCode
@@ -16,9 +18,14 @@ class Checker(object):
         self.startStr = '<div class="single-page">'
         self.endStr = '<footer class="footer">'
         self.url = url
-        # wacn host
-        parsed_uri = urlparse(url)
-        self.host = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+        self.json_flag = False
+        if self.url.endswith('.json'):
+            self.host = 'http://azure.cn'
+            self.json_flag = True
+        else:
+            # wacn host
+            parsed_uri = urlparse(url)
+            self.host = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
         # url that has been proved good :)
         self.goodSet = set()
         # url that has been proved bad :(
@@ -47,7 +54,7 @@ class Checker(object):
             html = urllib2.urlopen(self.url).read()
 
             # extract our content between '<section class="wa-section">...</section>'
-            siteDict = self.parser(html)
+            siteDict = self.json_parser(html) if self.json_flag else self.parser(html)
 
             # Now we got site dictionary in ('url','text'), let's check
             for k, v in siteDict.iteritems():
@@ -84,6 +91,24 @@ class Checker(object):
                 if href.strip().startswith('/'):
                     href = self.host + href
                 tempDict[href] = link.contents[0]
+
+        return tempDict
+
+
+    def json_parser(self, json_html):
+        tempDict = {}
+        bd = json.loads(json_html)
+        nav = bd["navigation"]
+
+        for section in nav:
+            articles = section["articles"]
+            for article in articles:
+                link = article["link"]
+                title = article["title"]
+                if link.startswith('/'):
+                    link = self.host + link
+
+                tempDict[link] = title
 
         return tempDict
 
