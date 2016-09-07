@@ -2,38 +2,41 @@
 
 import time
 import multiprocessing as mp
+from urlparse import urlparse
+import urllib2
 import checkRule
 import StatusCode
 import siteReader
-import urllib2
 from bs4 import BeautifulSoup
 
 
 class Checker(object):
-    def __init__(self):
+    def __init__(self, url):
         # self.urlList = urlList
         self.startStr = '<div class="single-page">'
         self.endStr = '<footer class="footer">'
+        self.url = url
         # wacn host
-        self.host = 'https://www.azure.cn'
+        parsed_uri = urlparse(url)
+        self.host = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
         # url that has been proved good :)
         self.goodSet = set()
         # url that has been proved bad :(
         self.badSet = set()
 
-    def check(self, url):
+    def check(self):
         # good/bad result
-        goodResult = '#### {0}\n'.format(url)
+        goodResult = '#### {0}\n'.format(self.url)
         goodResult += '| Name | Link | State |\n'
         goodResult += '| ---- | ---- | ----- |\n'
-        badResult = '#### {0}\n'.format(url)
+        badResult = '#### {0}\n'.format(self.url)
         badResult += '| Name | Link | State |\n'
         badResult += '| ---- | ---- | ----- |\n'
 
         # flag to indicate if error found
         error_flag = False
         # check for the url given
-        firstResult = self.getCheckResult(url, 'Parent Link Error')
+        firstResult = self.getCheckResult(self.url, 'Parent Link Error')
         # parent url error
         if not firstResult[0]:
             badResult = badResult + firstResult[1]
@@ -41,7 +44,7 @@ class Checker(object):
             goodResult = ''
         else:
             # open parent url to get page content
-            html = urllib2.urlopen(url).read()
+            html = urllib2.urlopen(self.url).read()
 
             # extract our content between '<section class="wa-section">...</section>'
             siteDict = self.parser(html)
@@ -111,8 +114,8 @@ class Checker(object):
 
 def worker(arg, q):
     ''' worker '''
-    checker = Checker()
-    result = checker.check(arg)
+    checker = Checker(arg)
+    result = checker.check()
     return result
 
 
