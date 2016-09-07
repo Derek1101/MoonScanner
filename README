@@ -4,18 +4,23 @@
              Simple tool to scann broken links
 
 
-	~ What is MoonScanner
+	~ What is MoonScanner?
+
 	  MoonScanner can scan WACN(PPE) broken links and generate
 	  result report with detailed info.
 
-	~ How to use?
+	~ How to use it?
+
  	  1. Install required packages:
 
 	  	pip install -r requirements.txt
         
- 	  2. Add urls to site.txt
-    
- 	  3. Run command
+ 	  2. Add urls to site.txt in such format (one url each line)
+
+        https://azure.cn/documentation/articles/xxxxx
+        http://wacn-ppe.chinacloudsites.cn/documentation/articles/xxxxx 
+
+ 	  3. Run the scanner
         
 		python app.py
       
