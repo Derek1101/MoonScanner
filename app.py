@@ -6,10 +6,54 @@ import multiprocessing as mp
 from urlparse import urlparse
 import requests
 import urllib2
-import checkRule
-import StatusCode
-import siteReader
 from bs4 import BeautifulSoup
+
+
+class StatusCode(object):
+    """ Status code of response"""
+    # Return OK
+    OK = 200
+    # 404
+    MoonCake_Not_Found = 404
+    # 500
+    MoonCake_Internal_Server_Error = 500
+
+
+class SiteReader(object):
+    """ Read site list from file """
+    def __init__(self, filePath):
+        self.filePath = filePath
+        self.siteList = []
+
+    def getSiteList(self):
+        with open(self.filePath, 'r') as sites:
+            for line in sites.readlines():
+                self.siteList.append(line.strip())
+        return self.siteList
+
+
+class CheckRule(object):
+    """ Check specified url """
+    def __init__(self, url):
+        self.url = url
+
+    def startCheck(self):
+        try:
+            response = requests.get(self.url)
+
+            # 1. check for real 404,500 etc
+            if response.status_code == StatusCode.OK:
+                # 2. check for mooncake 404 or 500 by check redirected url
+                if response.url.find('errors/404') > 0:
+                    return StatusCode.MoonCake_Not_Found
+                elif response.url.find('errors/500') > 0:
+                    return StatusCode.MoonCake_Internal_Server_Error
+                else:
+                    return StatusCode.OK
+            else:
+                return response.status_code
+        except Exception as e:
+            return StatusCode.MoonCake_Not_Found
 
 
 class Checker(object):
@@ -127,10 +171,10 @@ class Checker(object):
             status = 600
         if url not in self.goodSet:
             # New url
-            rule = checkRule.checkRule(url)
+            rule = CheckRule(url)
             status = rule.startCheck()
             # if status good, add to goodSet
-            if status == StatusCode.StatusCode.OK:
+            if status == StatusCode.OK:
                 self.goodSet.add(url)
             else:
                 flag = False
@@ -177,7 +221,7 @@ if __name__ == '__main__':
     # put listener to work first
     watcher = pool.apply_async(listener, (q,))
 
-    myReader = siteReader.siteReader('site.txt')
+    myReader = SiteReader('site.txt')
     siteList = myReader.getSiteList()
 
     # fire up workers
