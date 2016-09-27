@@ -80,6 +80,8 @@ class Checker(object):
 
         soup = BeautifulSoup(content, "html.parser")
         for link in soup.find_all("a"):
+            if not link.contents:
+                continue
             href = link.get("href")
             if href is not None:
                 # inner link and video link should be skipped
