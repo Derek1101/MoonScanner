@@ -34,11 +34,17 @@ class SiteReader(object):
 
 class CheckRule(object):
     """ Check specified url """
+    out_list = ['windowsazure.com', 'portal.azure.com', '.com/library', 'windows.net']
+
     def __init__(self, url):
         self.url = url
 
     def startCheck(self):
         try:
+            for key in self.out_list:
+                if key in self.url:
+                    return 600
+                    
             response = requests.get(self.url)
 
             # 1. check for real 404,500 etc
